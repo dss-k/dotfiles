@@ -1,0 +1,6 @@
+# nvim config
+.config/nvim/*
+!.config/nvim/init.vim
+!.config/nvim/dein
+.config/nvim/dein/*
+!.config/nvim/dein/toml
