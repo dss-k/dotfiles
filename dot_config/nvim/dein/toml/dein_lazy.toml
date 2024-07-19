@@ -150,6 +150,16 @@ hook_source = '''
    call ddc#custom#patch_global('sourceParams', {
       \ 'lsp': { 'kindLabels': { 'Class': 'c' } },
       \ })
+   " Default setting
+   call ddc#custom#patch_global('sourceParams', #{
+      \   nvim-lsp: #{
+      \     snippetEngine: denops#callback#register({
+      \           body -> vsnip#anonymous(body)
+      \     }),
+      \     enableResolveItem: v:true,
+      \     enableAdditionalTextEdit: v:true,
+      \   }
+      \ })
 
   " Mappings for native ui
   " <TAB>: completion.
@@ -223,10 +233,15 @@ repo = 'Shougo/ddc-source-lsp'
 on_source = 'vim-vsnip' # これ大事
 
 [[plugins]]
+repo = 'uga-rosa/ddc-source-vsnip'
+#on_source = 'ddc.vim'
+on_source = 'vim-vsnip' # これ大事
+
+[[plugins]]
 repo = 'hrsh7th/vim-vsnip'
 #on_event = 'InsertEnter'
 on_source = 'nvim-lspconfig'
-depends = ['vim-vsnip-integ', 'friendly-snippets']
+depends = 'friendly-snippets'
 hook_source = '''
   imap <expr> <C-j> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
   smap <expr> <C-j> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
@@ -235,13 +250,6 @@ hook_source = '''
   imap <expr> <C-b> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<C-b>'
   smap <expr> <C-b> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<C-b>'
   let g:vsnip_filetypes = {}
-'''
-
-[[plugins]]
-repo = 'hrsh7th/vim-vsnip-integ'
-on_source = 'nvim-lspconfig'
-hook_source = '''
-  autocmd User PumCompleteDone call vsnip_integ#on_complete_done(g:pum#completed_item)
 '''
 
 [[plugins]]
