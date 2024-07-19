@@ -4,3 +4,7 @@
 !.config/nvim/dein
 .config/nvim/dein/*
 !.config/nvim/dein/toml
+
+# tmux config
+.config/tmux/*
+!.config/tmux/tmux.conf
