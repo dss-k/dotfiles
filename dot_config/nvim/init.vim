@@ -85,6 +85,7 @@ set fileencoding=utf-8 "ファイルエンコーディングの自動判別対�
 set clipboard=unnamed "vimでyankしたテキストをクリップボードに格納する
 set completeopt=menuone "プレビュー廃止
 set wrap "折り返し有効
+set laststatus=3 "ステータスラインを1つに
 
 "全角スペースの可視化
 augroup highlightIdegraphicSpace
