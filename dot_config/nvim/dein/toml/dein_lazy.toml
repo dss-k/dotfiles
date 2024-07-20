@@ -1,3 +1,32 @@
+# バッファクローズ
+[[plugins]]
+repo = 'kazhala/close-buffers.nvim'
+on_event = 'BufRead'
+hook_source = '''
+lua << EOF
+require('close_buffers').setup()
+
+vim.api.nvim_set_keymap(
+  'n',
+  '<leader>bh',
+  [[<CMD>lua require('close_buffers').delete({type = 'hidden'})<CR>]],
+  { noremap = true, silent = true }
+)
+vim.api.nvim_set_keymap(
+  'n',
+  '<leader>bu',
+  [[<CMD>lua require('close_buffers').delete({type = 'nameless'})<CR>]],
+  { noremap = true, silent = true }
+)
+vim.api.nvim_set_keymap(
+  'n',
+  '<leader>bc',
+  [[<CMD>lua require('close_buffers').delete({type = 'this'})<CR>]],
+  { noremap = true, silent = true }
+)
+EOF
+'''
+
 # Git ------------------------
 [[plugins]]
 repo = 'tpope/vim-fugitive'
@@ -54,6 +83,11 @@ require('gitsigns').setup{
 }
 EOF
 '''
+
+[[plugins]]
+repo = 'sindrets/diffview.nvim'
+on_cmd = ['DiffviewOpen', 'DiffviewFileHistory']
+
 
 # treesitter------------------
 [[plugins]]
@@ -143,8 +177,8 @@ require'nvim-treesitter.configs'.setup {
 EOF
 '''
 
-[[plugins]]
 # 対応するカッコの色付け
+[[plugins]]
 repo = 'p00f/nvim-ts-rainbow'
 on_source = 'nvim-treesitter'
 depends = ['nvim-treesitter']
@@ -160,6 +194,16 @@ lua << EOF
       -- termcolors = {} -- table of colour name strings
     }
   }
+EOF
+'''
+
+# "gcc"でコメントアウト
+[[plugins]]
+repo = 'numToStr/Comment.nvim'
+on_source = 'nvim-treesitter'
+hook_source = '''
+lua << EOF
+require('Comment').setup()
 EOF
 '''
 
