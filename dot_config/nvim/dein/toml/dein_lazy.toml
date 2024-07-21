@@ -101,6 +101,9 @@ require'nvim-treesitter.configs'.setup {
     disable = {
     }
   },
+  indent = {
+    enable = true,
+  },
   ensure_installed = 'all'
 }
 EOF
@@ -220,67 +223,56 @@ hook_source = '''
 
   call ddc#custom#patch_global('sources', [
       \ 'around',
+      \ 'tmux',
       \ 'file',
-      \ 'lsp'
+      \ 'lsp',
+      \ 'vsnip'
       \ ])
 
   call ddc#custom#patch_global('sourceOptions', {
-      \ '_': {
-      \   'matchers': ['matcher_head'],
-      \   'sorters': ['sorter_rank'],
-      \   'converters': ['converter_remove_overlap'],
-      \ },
-      \ 'around': {'mark': 'Around'},
-      \ 'file': {
-      \   'mark': 'file',
-      \   'isVolatile': v:true,
-      \   'forceCompletionPattern': '\S/\S*',
-      \ },
-      \ 'lsp': {
-      \   'mark': 'LSP',
-      \   'forceCompletionPattern': '\.\w*|:\w*|->\w*',
-      \ },
-      \ })
+    \   '_': {
+    \     'matchers': ['matcher_fuzzy'],
+    \     'sorters': ['sorter_fuzzy'],
+    \     'converters': ['converter_fuzzy']
+    \   },
+    \   'around': {'mark': 'Around'},
+    \   'tmux': {'mark': 'tmux'},
+    \   'file': {
+    \     'mark': 'file',
+    \     'isVolatile': v:true,
+    \     'forceCompletionPattern': '\S/\S*',
+    \   },
+    \   'lsp': {
+    \     'mark': 'LSP',
+    \     'forceCompletionPattern': '\.\w*|:\w*|->\w*',
+    \   },
+    \   'vsnip': {
+    \     'mark': 'vsnip',
+    \   },
+    \ })
 
-   call ddc#custom#patch_global('sourceParams', {
+  call ddc#custom#patch_global('sourceParams', {
       \ 'around': {'maxSize': 500},
       \ })
 
-   " Use Customized labels
-   call ddc#custom#patch_global('sourceParams', {
+  " Use Customized labels
+  call ddc#custom#patch_global('sourceParams', {
       \ 'lsp': { 'kindLabels': { 'Class': 'c' } },
       \ })
-   " Default setting
-   call ddc#custom#patch_global('sourceParams', #{
-      \   nvim-lsp: #{
-      \     snippetEngine: denops#callback#register({
-      \           body -> vsnip#anonymous(body)
-      \     }),
-      \     enableResolveItem: v:true,
-      \     enableAdditionalTextEdit: v:true,
-      \   }
-      \ })
-
-  " Mappings for native ui
-  " <TAB>: completion.
-  "inoremap <silent><expr> <TAB>
-  "\ pumvisible() ? '<C-n>' :
-  "\ (col('.') <= 1 <Bar><Bar> getline('.')[col('.') - 2] =~# '\s') ?
-  "\ '<TAB>' : ddc#map#manual_complete()
-
-  " <S-TAB>: completion back.
-  "inoremap <expr><S-TAB>  pumvisible() ? '<C-p>' : '<C-h>'
 
   " pum.vim setting
   inoremap <silent><expr> <TAB>
         \ pum#visible() ? '<Cmd>call pum#map#insert_relative(+1)<CR>' :
         \ (col('.') <= 1 <Bar><Bar> getline('.')[col('.') - 2] =~# '\s') ?
-        \ '<TAB>' : ddc#manual_complete()
+        \ '<TAB>' : ddc#map#manual_complete()
   inoremap <S-Tab> <Cmd>call pum#map#insert_relative(-1)<CR>
-  inoremap <C-n>   <Cmd>call pum#map#select_relative(+1)<CR>
-  inoremap <C-p>   <Cmd>call pum#map#select_relative(-1)<CR>
+
+  " vsnpと干渉するため以下OFF
+  " inoremap <C-n>   <Cmd>call pum#map#select_relative(+1)<CR>
+  " inoremap <C-p>   <Cmd>call pum#map#select_relative(-1)<CR>
+
   inoremap <C-y>   <Cmd>call pum#map#confirm()<CR>
-  inoremap <C-e> <Cmd>call pum#map#cancel()<CR>
+  inoremap <C-e>   <Cmd>call pum#map#cancel()<CR>
 
   call ddc#enable()
 '''
@@ -312,18 +304,29 @@ repo = 'LumaKernel/ddc-file'
 on_source = 'ddc.vim'
 
 [[plugins]]
-# 入力中の単語を補完の対象にするフィルタ
-repo = 'Shougo/ddc-matcher_head'
+# tmuxの全てのpanesの情報を出すソース
+# 別paneでcatして補完させることができる
+repo = 'delphinus/ddc-source-tmux'
 on_source = 'ddc.vim'
 
-[[plugins]]
-# 補完候補をソートするフィルタ
-repo = 'Shougo/ddc-sorter_rank'
-on_source = 'ddc.vim'
+# [[plugins]]
+# # 入力中の単語を補完の対象にするフィルタ
+# repo = 'Shougo/ddc-matcher_head'
+# on_source = 'ddc.vim'
+#
+# [[plugins]]
+# # 補完候補をソートするフィルタ
+# repo = 'Shougo/ddc-sorter_rank'
+# on_source = 'ddc.vim'
+#
+# [[plugins]]
+# # 補完候補の重複を防ぐフィルタ
+# repo = 'Shougo/ddc-converter_remove_overlap'
+# on_source = 'ddc.vim'
 
 [[plugins]]
-# 補完候補の重複を防ぐフィルタ
-repo = 'Shougo/ddc-converter_remove_overlap'
+# fuzzy finder
+repo = 'tani/ddc-fuzzy'
 on_source = 'ddc.vim'
 
 # LSP settings=============================
@@ -343,12 +346,16 @@ repo = 'hrsh7th/vim-vsnip'
 on_source = 'nvim-lspconfig'
 depends = 'friendly-snippets'
 hook_source = '''
-  imap <expr> <C-j> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
-  smap <expr> <C-j> vsnip#expandable() ? '<Plug>(vsnip-expand)' : '<C-j>'
-  imap <expr> <C-f> vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<C-f>'
-  smap <expr> <C-f> vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<C-f>'
-  imap <expr> <C-b> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<C-b>'
-  smap <expr> <C-b> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<C-b>'
+  " Expand or jump
+  imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+  smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+
+  " Jump forward or backward
+  imap <expr> <C-n>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<C-n>'
+  smap <expr> <C-n>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<C-n>'
+  imap <expr> <C-p> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)'   : '<C-p>'
+  smap <expr> <C-p> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)'   : '<C-p>'
+
   let g:vsnip_filetypes = {}
 '''
 
